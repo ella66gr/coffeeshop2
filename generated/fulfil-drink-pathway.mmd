@@ -1,0 +1,32 @@
+%% ==============================================
+%% Generated from SysML v2 model — DO NOT EDIT
+%% Source: FulfilDrink action def
+%% Generator: gen_mermaid_pathway.py
+%% ==============================================
+
+```mermaid
+flowchart TD
+    receiveOrder([Receive Order])
+    checkDrinkType[Check Drink Type]
+    prepareHotBase[Prepare Hot Base]
+    prepareColdBase[Prepare Cold Base]
+    assembleDrink[Assemble Drink]
+    checkMilk[Check Milk]
+    addMilk[Add Milk]
+    markReady([Mark Ready])
+
+    receiveOrder --> checkDrinkType
+    checkDrinkType --> prepareHotBase
+    checkDrinkType --> prepareColdBase
+    prepareHotBase --> assembleDrink
+    prepareColdBase --> checkMilk
+    assembleDrink --> markReady
+    checkMilk --> addMilk
+    checkMilk --> assembleDrink
+    addMilk --> assembleDrink
+
+    style receiveOrder fill:#4CAF50,color:#fff,stroke:#388E3C
+    style markReady fill:#2196F3,color:#fff,stroke:#1565C0
+    style checkDrinkType fill:#FF9800,color:#fff,stroke:#E65100
+    style checkMilk fill:#FF9800,color:#fff,stroke:#E65100
+```
