@@ -38,6 +38,9 @@ importers:
       '@temporalio/workflow':
         specifier: ^1.15.0
         version: 1.15.0
+      xstate:
+        specifier: ^5.28.0
+        version: 5.28.0
     devDependencies:
       '@types/node':
         specifier: ^22.0.0

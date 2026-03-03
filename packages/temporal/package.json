@@ -7,14 +7,15 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
+    "@coffeeshop/shared": "workspace:*",
+    "@temporalio/activity": "^1.15.0",
     "@temporalio/client": "^1.15.0",
     "@temporalio/worker": "^1.15.0",
     "@temporalio/workflow": "^1.15.0",
-    "@temporalio/activity": "^1.15.0",
-    "@coffeeshop/shared": "workspace:*"
+    "xstate": "^5.28.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3"
   }
 }
