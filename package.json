@@ -9,6 +9,7 @@
     "generate": "pnpm generate:workflow && pnpm generate:pathway && pnpm generate:types && pnpm generate:statemachine && pnpm sync-generated",
     "sync-generated": "cp generated/types.ts generated/order-lifecycle-machine.ts packages/shared/src/generated/ && cp generated/fulfil-drink.ts packages/temporal/src/workflows/",
     "build": "pnpm --filter @coffeeshop/shared build && pnpm --filter @coffeeshop/temporal build",
+    "build:all": "pnpm --filter @coffeeshop/shared build && pnpm --filter @coffeeshop/temporal build && pnpm --filter @coffeeshop/web build",
     "dev:temporal": "pnpm --filter @coffeeshop/temporal dev",
     "dev:web": "pnpm --filter @coffeeshop/web dev"
   }
