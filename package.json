@@ -1,24 +1,15 @@
 {
   "name": "coffeeshop-demonstrator",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "dependencies": {
-    "@temporalio/activity": "^1.15.0",
-    "@temporalio/client": "^1.15.0",
-    "@temporalio/worker": "^1.15.0",
-    "@temporalio/workflow": "^1.15.0"
-  },
-  "devDependencies": {
-    "@types/node": "^25.3.3",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "generate:workflow": "python3 generators/gen_temporal_workflow.py model/domain/fulfil-drink-orchestration.sysml generated/fulfil-drink.ts",
+    "generate:pathway": "python3 generators/gen_mermaid_pathway.py ../coffeeshop-exercise/model/domain/drink-fulfilment.sysml generated/fulfil-drink-pathway.mmd",
+    "generate:types": "python3 generators/gen_typescript_types.py ../coffeeshop-exercise/model/domain/coffeeshop.sysml generated/types.ts",
+    "generate:statemachine": "python3 generators/gen_state_machines.py ../coffeeshop-exercise/model/domain/order-lifecycle.sysml generated/order-lifecycle-machine.ts",
+    "generate": "pnpm generate:workflow && pnpm generate:pathway && pnpm generate:types && pnpm generate:statemachine && pnpm sync-generated",
+    "sync-generated": "cp generated/types.ts generated/order-lifecycle-machine.ts packages/shared/src/generated/ && cp generated/fulfil-drink.ts packages/temporal/src/workflows/",
+    "build": "pnpm --filter @coffeeshop/shared build && pnpm --filter @coffeeshop/temporal build",
+    "dev:temporal": "pnpm --filter @coffeeshop/temporal dev",
+    "dev:web": "pnpm --filter @coffeeshop/web dev"
   }
 }

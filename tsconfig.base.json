@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["esnext"],
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedSideEffectImports": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true
+  }
+}
