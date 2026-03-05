@@ -1,20 +1,32 @@
 # SysML v2 Syntax Reference — Syside Modeler
 ## Verified Patterns from CoffeeShop Exercise & Demonstrator
 
-> **Version:** 3.0 — 3 March 2026
-> **Previous version:** `sysml-v2-syntax-reference-v2.0-2026-03-03.md`
-> **Purpose:** Capture working SysML v2 syntax as verified against Syside Modeler 0.8.4.
+> **Version:** 3.1 — 5 March 2026
+> **Previous version:** `sysml-v2-syntax-reference-v3.0-2026-03-03.md` (v3.0, 3 March 2026)
+> **Purpose:** Capture working SysML v2 syntax as verified against Syside Modeler.
 > This file should travel with the project repo and be consulted before writing new `.sysml` files.
 > Update as new patterns are verified or corrected.
 >
-> **What's new in v3.0:** Phase C integration patterns — XState pure transition functions inside Temporal V8 isolate, Temporal query handlers, complete end-to-end mapping from SysML model to running web application with state enforcement.
+> **What's new in v3.1:** Syside Modeler updated to 0.8.5 (released 1 March 2026). Verified `use case def` syntax in the GenderSense package hierarchy. Documented significant new Syside 0.8.5 capabilities (use case diagrams, sequence diagrams, SysML v2 views, CLI diagram generation, Automator filter evaluation and user-defined calculation support). Updated TODO list.
 
 ---
 
 ## Environment
 
-- **Syside Modeler** 0.8.4 (VS Code extension)
-- **SysML v2.0** (OMG ratified July 2025)
+- **Syside Modeler** 0.8.5 (VS Code extension, released 1 March 2026)
+  - Tom Sawyer SysML v2 Viewer v1.3 (sequence diagrams, use case diagrams, colour rendering)
+  - SysML v2 `view` element support for scoped diagram generation
+  - Modeler CLI with headless diagram generation (`viz` command) for CI/CD
+  - Python runtime now bundled (no external Python dependency)
+  - Sensmetry claim full SysML v2.0 support as of October 2025; OMG conformance test suite not yet completed industry-wide
+  - Syside v1.0.0 targeted for Q1 2026 (stable Automator API, Sysand integration)
+  - Extension shows "Preview" badge in VS Code — this is a VS Code Marketplace pre-release/preview designation, not a Syside limitation
+- **Syside Automator** 0.8.5 (Python, available on PyPI)
+  - `Compiler.evaluate_filter` for metadata-based element filtering
+  - User-defined calculation evaluation via `Compiler.evaluate_feature`
+  - Relevant for future generator migration from regex to semantic model access
+- **SysML v2.0** (OMG ratified July 2025, formal PDFs September 2025)
+- **KerML 1.0** (ratified alongside SysML v2.0)
 - **Standard library import:** `private import ScalarValues::*;` required at top of each package
 - **Cross-project imports:** Syside resolves `private import PackageName::*;` across projects in the same workspace, provided the target package is in a `.sysml` file within the workspace folder tree
 
@@ -845,20 +857,142 @@ All generated artefacts trace back to the SysML model. No process knowledge exis
 
 ---
 
+## GenderSense Package Hierarchy: Use Case Definitions ✅
+
+*New in v3.1 — verified 5 March 2026 in Syside Modeler 0.8.5*
+
+### Purpose
+
+The GenderSense package hierarchy (`gendersense-package-hierarchy.sysml`) establishes the full namespace structure for the GenderSense business system. It uses `use case def` extensively to define placeholder capabilities at each package level.
+
+### Working constructs
+
+```sysml
+package ServiceDelivery {
+    private import ScalarValues::*;
+
+    package PatientJourney {
+        private import ScalarValues::*;
+
+        doc /* Top-level lifecycle from acquisition through to discharge. */
+
+        use case def AcquirePatient {
+            doc /* Patient discovers and engages with GenderSense. */
+        }
+
+        use case def RegisterPatient {
+            doc /* Patient registration, identity verification,
+                 * demographic capture, consent collection. */
+        }
+    }
+}
+```
+
+### Key points
+- `use case def` is a first-class SysML v2 language element for defining actor-system interactions
+- Supports `doc /* ... */` inside the body, same as `part def`, `action def`, etc.
+- Can be nested inside any `package`
+- Syside Modeler 0.8.5 parses `use case def` without errors (verified with 50+ use case defs in a single file)
+- Tom Sawyer SysML v2 Viewer v1.3 adds use case diagram rendering (not yet tested for GenderSense hierarchy)
+- `include use case` and `extend use case` relationships: not yet tested but expected to work given full v2.0 spec support
+- `subject` declaration inside `use case def`: not yet tested
+- `actor` parts and `actor def`: not yet tested
+
+### Verified in this exercise
+- Deep package nesting (6 top-level packages, ~40 sub-packages, 3 levels deep) in a single `.sysml` file
+- Mixed content: `package`, `part def`, `enum def`, `state def`, `metadata def`, `use case def`, `attribute def`, and `constraint def` all coexisting in one file
+- `doc /* ... */` blocks on all element types including `use case def`
+- No Syside validation errors on the complete 1,100+ line file
+
+---
+
+## Satisfy Traceability: Requirements to Constraints ✅
+
+*New in v3.1 — verified 5 March 2026 in Syside Modeler 0.8.5*
+
+### Purpose
+
+The governance traceability chain requires that regulatory requirements trace to evaluable constraints, which trace to runtime checks, which trace to audit evidence. SysML v2 `satisfy` relationships provide the formal link between `requirement def` and `constraint def` elements.
+
+### Working constructs
+
+```sysml
+package Regulation {
+    private import ScalarValues::*;
+
+    requirement def BloodMonitoringRequired {
+        doc /* Patients on hormone therapy must have blood tests
+             * performed at defined monitoring intervals. */
+        subject patient : ClinicalEntities::Patient;
+        attribute monitoringIntervalWeeks : Integer;
+    }
+}
+
+package ConstraintLibrary {
+    private import ScalarValues::*;
+    private import Enterprise::Regulation::*;    // import requirements into scope
+
+    constraint def BloodMonitoringIntervalConstraint {
+        doc /* Weeks since last test must not exceed required interval. */
+        in weeksSinceLastTest : Integer;
+        in requiredIntervalWeeks : Integer;
+
+        weeksSinceLastTest <= requiredIntervalWeeks
+    }
+
+    // Usage (feature) typed by the constraint def
+    constraint bloodMonitoringCheck : BloodMonitoringIntervalConstraint;
+
+    // Traceability: this constraint satisfies that requirement
+    satisfy requirement BloodMonitoringRequired
+        by bloodMonitoringCheck;
+}
+```
+
+### Key points
+- `requirement def` with `subject` and `attribute` declarations parses correctly
+- `subject patient : ClinicalEntities::Patient;` — cross-package type reference works inside `requirement def`
+- `satisfy requirement X by Y;` creates a `SatisfyRequirementUsage` element that Syside semantically validates
+- The `by` target **must be a feature (usage), not a definition**. Use `constraint myCheck : MyConstraintDef;` to create a usage, then reference `myCheck` in the `by` clause
+- Requirements must be **imported into scope** before referencing in `satisfy`. Use `private import Enterprise::Regulation::*;` in the package containing the `satisfy` relationship
+- **Do not use fully-qualified paths starting from the root package** (e.g. `GenderSense::Enterprise::...`) from inside the same root package — this triggers `namespace-distinguishability` shadowing warnings. Use relative paths or imports instead
+
+### ⚠️ Syntax traps
+
+| What you might write | What Syside actually wants | Error |
+|---|---|---|
+| `satisfy requirement R by MyConstraintDef;` | `constraint c : MyConstraintDef; satisfy requirement R by c;` | `feature-reference-expression-referent-is-feature` |
+| `satisfy requirement GenderSense::Enterprise::Regulation::R by c;` | `private import Enterprise::Regulation::*;` then `satisfy requirement R by c;` | `namespace-distinguishability` + `reference-error` |
+| `satisfy requirement Enterprise::Regulation::R by c;` (from sibling package) | `private import Enterprise::Regulation::*;` then `satisfy requirement R by c;` | `reference-error` (can't navigate to sibling without import) |
+
+### Not yet verified
+- `verify` relationship (linking verification cases to requirements)
+- `requirement def` specialisation (one requirement extending another)
+- `requirement` usages within `use case def` bodies
+- Runtime generation from `satisfy` relationships (e.g. producing compliance check code)
+
+---
+
 ## TODO: Patterns Not Yet Verified
 
 - [ ] `decide` / `merge` control nodes — proper syntax for Syside
 - [ ] Guard conditions on action flow transitions
 - [ ] `fork` / `join` for parallel actions
-- [ ] `satisfy` / `verify` relationships (linking requirements to constraints)
+- [x] ~~`satisfy` relationships (linking requirements to constraints)~~ — verified 5 March 2026; see "Satisfy/Verify Traceability" section
+- [ ] `verify` relationships — not yet tested
 - [ ] Port definitions and connections
-- [ ] Syside Automator programmatic model access
+- [x] ~~Syside Automator programmatic model access~~ — Automator 0.8.5 now on PyPI with `Compiler.evaluate_filter` and `Compiler.evaluate_feature`; full evaluation deferred to generator migration
 - [ ] `metadata def` with non-scalar attribute types (e.g. enum-valued metadata attributes)
 - [ ] `metadata def` specialisation (one metadata def extending another)
 - [ ] `metadata def` applied to `part def`, `state def`, or `requirement def` elements (only verified on `action def` and `action` so far)
 - [ ] Generator extension: `gen_temporal_workflow.py` emitting `tryTransition()` calls from `@StateTransitionTrigger` annotations
 - [ ] Temporal `Promise.all()` generation from SysML `fork` / `join` constructs
+- [x] ~~`use case def` — basic declaration with `doc` blocks~~ — verified 5 March 2026 (GenderSense package hierarchy)
+- [ ] `use case def` with `include use case`, `extend use case`, `subject`, `actor` — advanced use case relationships
+- [ ] SysML v2 `view` and `viewpoint` elements for scoped diagram generation
+- [ ] Syside CLI `viz` command for headless diagram export
+- [ ] Re-test `decide`/`merge`, `fork`/`join` against Syside 0.8.5 (may now work given full v2.0 support claim)
 
 ---
 
-*End of document. Previous version preserved as `sysml-v2-syntax-reference-v2.0-2026-03-03.md`.*
+*End of document. Previous version preserved as `sysml-v2-syntax-reference-v3.0-2026-03-03.md`.*

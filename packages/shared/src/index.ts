@@ -18,3 +18,6 @@ export {
 
 // Workflow constants shared between Temporal and SvelteKit
 export * from './workflow-constants.js';
+
+// Re-export Phase D audit types explicitly for clarity
+export type { WorkflowStepDef } from './workflow-constants.js';

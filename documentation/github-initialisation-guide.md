@@ -1,4 +1,4 @@
-# SysMLv2 Github Initialisation
+# Github Initialisation Guide
 
 
 

@@ -66,3 +66,108 @@ export const STATE_AVAILABLE_SIGNAL: Record<string, { signal: SignalName; label:
   collected: null,
   cancelled: null,
 };
+
+// ==========================================================================
+// Phase D — Governance & Audit
+//
+// Expected timing values sourced from SysML model annotations:
+//   @TemporalSignal { signalName = "baristaStarted"; timeoutMinutes = 30; }
+//   @TemporalSignal { signalName = "drinkReady";     timeoutMinutes = 15; }
+//   @TemporalSignal { signalName = "drinkCollected";  timeoutMinutes = 60; }
+//
+// For the demonstrator these are transcribed as manual constants.
+// A future generator (gen_audit_constants.py) could extract them
+// directly from the SysML model for full single-source-of-truth.
+// ==========================================================================
+
+// -- Workflow step definitions for audit reporting --
+
+export interface WorkflowStepDef {
+  /** Identifier matching the SysML action name. */
+  readonly stepId: string;
+  /** Human-readable step name for the compliance table. */
+  readonly label: string;
+  /** Step type: 'activity' (Temporal activity), 'signal' (human-in-the-loop wait). */
+  readonly type: 'activity' | 'signal';
+  /**
+   * Expected maximum duration in minutes.
+   * For signal steps: from the SysML @TemporalSignal timeoutMinutes.
+   * For activity steps: a reasonable processing expectation.
+   * null means no timing expectation (informational only).
+   */
+  readonly expectedMinutes: number | null;
+  /**
+   * The Temporal signal name (for signal steps) or activity name (for
+   * activity steps). Used to match against Temporal event history.
+   */
+  readonly temporalName: string;
+}
+
+/**
+ * Ordered list of workflow steps as defined in the SysML
+ * FulfilDrinkWorkflow action def. The order matches the
+ * action flow succession.
+ */
+export const WORKFLOW_STEPS: readonly WorkflowStepDef[] = [
+  {
+    stepId: 'validateOrder',
+    label: 'Validate Order',
+    type: 'activity',
+    expectedMinutes: 1,
+    temporalName: 'validateOrder',
+  },
+  {
+    stepId: 'waitBaristaStart',
+    label: 'Wait for Barista',
+    type: 'signal',
+    expectedMinutes: 30,
+    temporalName: 'baristaStarted',
+  },
+  {
+    stepId: 'prepareDrink',
+    label: 'Prepare Drink',
+    type: 'activity',
+    expectedMinutes: 1,
+    temporalName: 'prepareDrink',
+  },
+  {
+    stepId: 'waitDrinkReady',
+    label: 'Wait for Drink Ready',
+    type: 'signal',
+    expectedMinutes: 15,
+    temporalName: 'drinkReady',
+  },
+  {
+    stepId: 'waitCollected',
+    label: 'Wait for Collection',
+    type: 'signal',
+    expectedMinutes: 60,
+    temporalName: 'drinkCollected',
+  },
+  {
+    stepId: 'completeOrder',
+    label: 'Complete Order',
+    type: 'activity',
+    expectedMinutes: 1,
+    temporalName: 'completeOrder',
+  },
+] as const;
+
+// -- Anonymisation --
+
+/**
+ * Produce an anonymised case reference from a workflow/order ID.
+ * Uses a simple hash to avoid exposing customer-identifiable data
+ * in audit reports.
+ *
+ * Example: "order-1772576981645" → "CASE-A3F7"
+ */
+export function anonymiseCaseRef(workflowId: string): string {
+  let hash = 0;
+  for (let i = 0; i < workflowId.length; i++) {
+    const ch = workflowId.charCodeAt(i);
+    hash = ((hash << 5) - hash + ch) | 0;
+  }
+  const hex = Math.abs(hash).toString(16).toUpperCase().slice(0, 4).padStart(4, '0');
+  return `CASE-${hex}`;
+}

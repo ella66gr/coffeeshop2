@@ -35,7 +35,7 @@
 </script>
 
 <h1>Coffee Shop Demonstrator</h1>
-<p>Phase C — SysML v2 Model-Driven Execution</p>
+<p>SysML v2 Model-Driven Execution — Phase D: Governance Outputs</p>
 
 <hr />
 

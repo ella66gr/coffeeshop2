@@ -128,7 +128,7 @@
 </script>
 
 <h1>Order Status</h1>
-<p><a href="/">&larr; Back to order form</a></p>
+<p><a href="/">&larr; Back to order form</a> &nbsp;|&nbsp; <a href="/orders">All orders</a></p>
 
 <hr />
 
@@ -168,6 +168,7 @@
       </button>
     {:else if isTerminal}
       <p><em>Order complete. No further actions available.</em></p>
+      <p><a href="/orders/{orderId}/audit"><strong>View Audit Report</strong></a></p>
     {:else}
       <p><em>Waiting for state update…</em></p>
     {/if}
